@@ -1,71 +1,40 @@
 import { World, Mod } from "./mw";
 
 /**
- * Creates the API that mods can interact with.
- * Allows mods to manipulate the world safely.
+ * Create an API that mods can use to manipulate the world.
  */
 export function createAPI(world: World) {
   return {
-    // Expand or resize the room
     expandRoom(x: number, y: number, z: number) {
       world.room.size = [x, y, z];
     },
 
-    // Add a new mod programmatically
-    addMod(code: string, assets?: Record<string, ArrayBuffer>) {
-      world.mods.push({ code, assets });
-    },
-
-    // Log from a mod
-    log(message: string) {
-      console.log(`[Mod Log]: ${message}`);
-    },
-
-    // Example: add an item (placeholder for future item system)
-    addItem(name: string, data: any) {
+    // Example: add an item safely
+    addItem(name: string, data: unknown) {
       if (!world.items) world.items = [];
       world.items.push({ name, data });
+    },
+
+    // Example: add a mod dynamically
+    addMod(mod: Mod) {
+      world.mods.push(mod);
     },
   };
 }
 
 /**
- * Applies all mods in the world.
- * Each mod receives the safe API to manipulate the world.
+ * Apply all mods in the world safely.
  */
 export function applyMods(world: World) {
   const api = createAPI(world);
 
-  world.mods.forEach((mod: Mod, index: number) => {
+  world.mods.forEach((mod) => {
     try {
-      // Create a function from the mod code
-      // It receives the API object as a parameter
+      // Wrap dynamic execution safely
       const fn = new Function("Mod", mod.code);
       fn(api);
     } catch (err) {
-      console.error(`Error applying mod #${index}:`, err);
+      console.error("Failed to apply mod:", err);
     }
   });
-}
-
-/**
- * Apply a single mod dynamically
- */
-export function applyMod(world: World, mod: Mod) {
-  const api = createAPI(world);
-  try {
-    const fn = new Function("Mod", mod.code);
-    fn(api);
-    world.mods.push(mod); // Add to world after applying
-  } catch (err) {
-    console.error("Error applying single mod:", err);
-  }
-}
-
-/**
- * Utility to remove a mod by index
- */
-export function removeMod(world: World, index: number) {
-  if (index < 0 || index >= world.mods.length) return;
-  world.mods.splice(index, 1);
 }
