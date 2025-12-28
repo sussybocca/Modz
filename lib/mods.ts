@@ -1,3 +1,4 @@
+// lib/mods.ts
 import { World, Mod } from "./mw";
 
 /**
@@ -9,13 +10,14 @@ export function createAPI(world: World) {
       world.room.size = [x, y, z];
     },
 
-    // Example: add an item safely
     addItem(name: string, data: unknown) {
-      if (!world.items) world.items = [];
-      world.items.push({ name, data });
+      // Safely initialize items array if it doesn't exist
+      if (!("items" in world)) {
+        (world as World & { items: { name: string; data: unknown }[] }).items = [];
+      }
+      (world as World & { items: { name: string; data: unknown }[] }).items.push({ name, data });
     },
 
-    // Example: add a mod dynamically
     addMod(mod: Mod) {
       world.mods.push(mod);
     },
@@ -23,14 +25,13 @@ export function createAPI(world: World) {
 }
 
 /**
- * Apply all mods in the world safely.
+ * Apply all mods safely.
  */
 export function applyMods(world: World) {
   const api = createAPI(world);
 
   world.mods.forEach((mod) => {
     try {
-      // Wrap dynamic execution safely
       const fn = new Function("Mod", mod.code);
       fn(api);
     } catch (err) {
