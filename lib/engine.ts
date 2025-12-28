@@ -1,6 +1,7 @@
 import * as THREE from "three";
+import { World } from "./mw"; // Import your World type
 
-export function startEngine(container: HTMLElement, world) {
+export function startEngine(container: HTMLElement, world: World) {
   container.innerHTML = "";
 
   const scene = new THREE.Scene();
@@ -60,14 +61,12 @@ export function startEngine(container: HTMLElement, world) {
   }
 
   // ---- Load mod assets (textures / FBX placeholders) ----
-  // Example: we can expand this later for real FBX/Texture loaders
   world.mods.forEach((mod) => {
     if (mod.assets) {
       for (const [name, buffer] of Object.entries(mod.assets)) {
         const blob = new Blob([buffer]);
         const url = URL.createObjectURL(blob);
         console.log("Loaded asset from mod:", name, url);
-        // You can later use THREE.TextureLoader or FBXLoader to load this
       }
     }
   });
